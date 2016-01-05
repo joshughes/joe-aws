@@ -1,0 +1,30 @@
+---
+project_name: django_hello
+
+install_root: /srv
+
+wsgi_module: hello.wsgi
+
+pythonpath: "{{ install_root }}/{{ project_name }}/hello/apps"
+
+project_repo: https://github.com/technivore/django-hello-world.git
+
+static_root: "{{ install_root }}/{{ project_name }}/static"
+
+server_name: django-hello.com www.django-hello.com
+
+db_name: hello
+db_user: hello
+db_password: changeme
+
+system_packages:
+  - git
+  - nginx
+  - gunicorn
+  - postgresql
+  - postgresql-server-dev-all
+  - python-pip
+  - python-dev
+  - python-psycopg2
+
+# vim:ft=ansible:

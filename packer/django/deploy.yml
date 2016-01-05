@@ -1,0 +1,49 @@
+---
+- hosts: servers
+  vars_files:
+    - vars.yml
+  gather_facts: false
+  user: ubuntu
+  sudo: true
+
+  tasks:
+    - name: Clone/pull project repo
+      git: repo={{ project_repo }} dest={{ install_root }}/{{ project_name }} accept_hostkey=yes
+      notify: restart gunicorn
+
+    - name: install python packages
+      pip: requirements={{ install_root }}/{{ project_name }}/requirements.txt
+      notify: restart gunicorn
+
+    - name: delete default nginx sites
+      file: path=/etc/nginx/sites-enabled/default state=absent
+      notify: restart nginx
+
+    - name: copy nginx config
+      template: src=files/nginx.j2 dest=/etc/nginx/sites-available/{{ project_name }}.conf
+      notify: restart nginx
+
+    - name: copy nginx config
+      file: state=link src=/etc/nginx/sites-available/{{ project_name }}.conf dest=/etc/nginx/sites-enabled/{{ project_name }}.conf
+      notify: restart nginx
+
+    - name: django migrate
+      django_manage: command=migrate app_path={{ install_root }}/{{ project_name }} pythonpath={{ pythonpath }}
+
+    - name: django collectstatic
+      django_manage: command=collectstatic app_path={{ install_root }}/{{ project_name }} pythonpath={{ pythonpath }}
+
+    - name: copy gunicorn config
+      template: src=files/gunicorn.j2 dest=/etc/init/gunicorn.conf
+      notify: restart gunicorn
+
+    - name: make sure gunicorn server is running
+      service: name=gunicorn state=started enabled=yes
+
+    - name: make sure nginx server is running
+      service: name=nginx state=started enabled=yes
+
+  handlers:
+    - include: handlers.yml
+
+# vim:ft=ansible:
