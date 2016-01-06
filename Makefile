@@ -22,6 +22,12 @@ remove_vpc:
 		terraform get &&\
 		terraform destroy -var "ami=$(1)"
 
+instance_csv:
+	@scripts/instances_csv.sh
+
+elb_csv:
+	@scripts/elb_stats.sh
+
 .PHONY: \
 	build_ami \
 	plan_vpc \

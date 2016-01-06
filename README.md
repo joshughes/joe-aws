@@ -6,6 +6,8 @@ Install packer and terraform
 ```
 brew install packer
 brew install terraform
+brew install awscli
+brew install jq
 ```
 
 Ensure you aws keys are exported as environment variables
@@ -49,7 +51,7 @@ We minimize the number or security groups to allow data inside the VPC to flow l
 
 
 ###Django Hello World
-This application will be run inside an AWS autoscaling group. The Group will be monitored and have health checks for scale up and scale down events. After running the `make build_vpc $AMI_ID` you will be able to view all the resources created by terraform. You will see that Cloudwatch will be inspecting the auto scalling group ensuring we scale if needed.
+This application will be run inside an AWS autoscaling group. The Group will be monitored and have health checks for scale up and scale down events. After running the `make build_vpc $AMI_ID` you will be able to view all the resources created by terraform. You will see that Cloud-watch will be inspecting the auto scaling group ensuring we scale if needed.
 
 ##Naming conventions
 This terraform structure also provides naming conventions that allow users in the AWS console to easily identify resources and provides a standard that makes reports and general use pleasant.
@@ -59,8 +61,13 @@ This terraform structure also provides naming conventions that allow users in th
 
 There are multiple make targets and I will list the suggested order of execution below.
 
-1. `make build_ami` - Uses packer to create a temperary aws instance that is provisioned by ansible. We goal is to save the ami-id and pass it to the next make target.
+1. `make build_ami` - Uses packer to create a temporary aws instance that is provisioned by ansible. We goal is to save the ami-id and pass it to the next make target.
 2. `make plan_vpc $AMI_ID` - Passing the ami-id from step one to this make target, terraform will inform you of everything its going to create. It will be creating the entire VPC for us.
 3. `make graph_vpc` - Shows the terraform dependency graph of all the resources being created. Take the output and head over to [graphviz](http://www.webgraphviz.com/).
 4. `make build_vpc $AMI_ID` - Will create the vpc with an Djano hello world application running on an autoscaling group. There is also an elb to hit that has all instances in the autoscaling group registered.
-5. `make destroy_vpc $AMI_ID` - Will tear down all the infrastructure that terraform has built. 
+5. `make destroy_vpc $AMI_ID` - Will tear down all the infrastructure that terraform has built.
+
+###Running example scripts
+
+1. `make instance_csv` - Prints out all the instance_ids, instance_names, and instances types in an AWS account to a CSV format.
+2. `make elb_csv` - Prints out a csv description of all the listeners on ELBs in an aws account.
